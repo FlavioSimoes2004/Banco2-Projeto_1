@@ -1,4 +1,3 @@
-DROP DATABASE IF EXISTS Restaurante;
 CREATE DATABASE IF NOT EXISTS Restaurante;
 USE Restaurante;
 

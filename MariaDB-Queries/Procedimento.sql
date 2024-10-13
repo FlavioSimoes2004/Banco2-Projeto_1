@@ -4,7 +4,7 @@ BEGIN
     SET valor = valor + (valor * (percentual/100));
 END;
 
-CREATE PROCEDURE IF NOT EXISTS sorteio()
+CREATE PROCEDURE IF NOT EXISTS Sorteio()
 BEGIN
 
 END;
