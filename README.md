@@ -1,7 +1,17 @@
 # PRE-REQUISITOS
 1- instalar python virtual environment
-    sudo apt install python3-venv
+<pre>
+sudo apt install python3-venv
+</pre>
 
 # COMANDOS
-- source myflask/bin/activate (para entrar na maquina virtual)
-- python app.py (para rodar o codigo)
+Para entrar na maquina virtual
+<pre>
+source myflask/bin/activate
+</pre>
+Para rodar o codigo
+<pre>
+python app.py
+    ou
+flask run
+</pre>
