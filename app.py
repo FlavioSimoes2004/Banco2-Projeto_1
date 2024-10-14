@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request, jsonify
+import sys
+sys.path.append("./myflask/lib/python3.12/site-packages")
 from flask_mysqldb import MySQL
 
 app = Flask(__name__)
