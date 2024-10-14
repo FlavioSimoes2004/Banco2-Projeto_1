@@ -36,8 +36,8 @@ CREATE TABLE IF NOT EXISTS ingredientes(
 CREATE TABLE IF NOT EXISTS usos(
     id_prato INTEGER NOT NULL,
     id_ingrediente INTEGER NOT NULL,
-    FOREIGN KEY (id_prato) REFERENCES prato (id),
-    FOREIGN KEY (id_ingrediente) REFERENCES ingredientes (id)
+    FOREIGN KEY (id_prato) REFERENCES prato (id) ON DELETE CASCADE,
+    FOREIGN KEY (id_ingrediente) REFERENCES ingredientes (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS venda(
@@ -48,6 +48,6 @@ CREATE TABLE IF NOT EXISTS venda(
     dia DATE NOT NULL,
     hora TIME NOT NULL,
     valor DECIMAL(10, 3),
-    FOREIGN KEY (id_cliente) REFERENCES cliente (id),
-    FOREIGN KEY (id_prato) REFERENCES prato (id)
+    FOREIGN KEY (id_cliente) REFERENCES cliente (id) ON DELETE CASCADE,
+    FOREIGN KEY (id_prato) REFERENCES prato (id) ON DELETE CASCADE
 );
