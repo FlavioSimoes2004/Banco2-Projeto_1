@@ -21,7 +21,34 @@ CREATE TABLE IF NOT EXISTS prato(
 CREATE TABLE IF NOT EXISTS fornecedor(
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(50) NOT NULL,
-    estado_origem VARCHAR(20) NOT NULL
+    estado_origem ENUM(
+        'AC',
+        'AL',
+        'AP',
+        'AM',
+        'BA',
+        'CE',
+        'ES',
+        'GO',
+        'MA',
+        'MT',
+        'MS',
+        'MG',
+        'PA',
+        'PB',
+        'PE',
+        'PR',
+        'PI',
+        'RJ',
+        'RN',
+        'RS',
+        'RO',
+        'RR',
+        'SC',
+        'SP',
+        'SE',
+        'TO'
+    ) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS ingredientes(

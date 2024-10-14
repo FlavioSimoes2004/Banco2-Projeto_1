@@ -26,16 +26,16 @@ INSERT INTO prato (nome, descricao, valor, disponibilidade) VALUES
 
 -- Inserindo dados na tabela fornecedor
 INSERT INTO fornecedor (nome, estado_origem) VALUES
-('Fornecedor A', 'São Paulo'),
-('Fornecedor B', 'Minas Gerais'),
-('Fornecedor C', 'Rio de Janeiro'),
-('Fornecedor D', 'Bahia'),
-('Fornecedor E', 'Rio Grande do Sul'),
-('Fornecedor F', 'Paraná'),
-('Fornecedor G', 'Ceará'),
-('Fornecedor H', 'Santa Catarina'),
-('Fornecedor I', 'Pernambuco'),
-('Fornecedor J', 'Espírito Santo');
+('Fornecedor A', 'SP'),
+('Fornecedor B', 'MG'),
+('Fornecedor C', 'RJ'),
+('Fornecedor D', 'BA'),
+('Fornecedor E', 'RS'),
+('Fornecedor F', 'PA'),
+('Fornecedor G', 'CE'),
+('Fornecedor H', 'SC'),
+('Fornecedor I', 'PE'),
+('Fornecedor J', 'ES');
 
 -- Inserindo dados na tabela ingredientes
 INSERT INTO ingredientes (nome, data_fabricacao, data_validade, quantidade, observacao) VALUES
