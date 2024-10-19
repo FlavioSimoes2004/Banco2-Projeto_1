@@ -4,10 +4,19 @@ BEGIN
     SET valor = valor + (valor * (percentual/100));
 END;
 
+DELIMITER #
 CREATE PROCEDURE IF NOT EXISTS Sorteio()
 BEGIN
-
-END;
+    UPDATE cliente
+    SET pontos = pontos + 100
+    WHERE id = (
+        SELECT id
+        FROM cliente
+        ORDER BY rand() 
+        LIMIT 1
+    );
+END #
+DELIMITER;
 
 CREATE PROCEDURE IF NOT EXISTS Estatisticas()
 BEGIN
