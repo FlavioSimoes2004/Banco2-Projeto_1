@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request, jsonify
+from json import JSONEncoder
+import json
 import sys
 sys.path.append("./myflask/lib/python3.12/site-packages")
 from flask_mysqldb import MySQL
@@ -12,6 +14,18 @@ app.config['MYSQL_DB'] = 'Restaurante'
 
 mysql = MySQL(app)
 
+class CustomJSONEncoder(JSONEncoder):
+    def default(self, obj):
+        try:
+            if isinstance(obj, date):
+                return obj.isoformat()
+            iterable = iter(obj)
+        except TypeError:
+            pass
+        else:
+            return list(iterable)
+        return JSONEncoder.default(self, obj)
+app.json_encoder = CustomJSONEncoder
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -62,7 +76,8 @@ def getVendas():
     cur.execute('SELECT * FROM venda')
     data = cur.fetchall()
     cur.close()
-    return jsonify(data)
+#    return jsonify(data)
+    return json.dumps(data, indent=4, sort_keys=True, default=str)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
