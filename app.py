@@ -79,5 +79,52 @@ def getVendas():
 #    return jsonify(data)
     return json.dumps(data, indent=4, sort_keys=True, default=str)
 
+@app.route('/menosvendido', methods=['get'])
+def getMenosVendido():
+    cur = mysql.connection.cursor()
+    cur.execute("""
+                SELECT p.nome, SUM(v.valor) AS valor_total
+                FROM venda v
+                INNER JOIN prato p ON v.id_prato = p.id
+                GROUP BY p.id
+                ORDER BY valor_total ASC
+                LIMIT 1;
+
+                """)
+    data = cur.fetchall()
+    cur.close()
+    return jsonify(data)
+
+@app.route('/mesesvendas', methods=['get'])
+def getMesesVenda():
+    cur = mysql.connection.cursor()
+    cur.execute("""
+                    SET @produto_menos_vendido = (
+                    SELECT p.id
+                    FROM venda v
+                    INNER JOIN prato p ON v.id_prato = p.id
+                    GROUP BY p.id
+                    ORDER BY SUM(v.valor) ASC
+                    LIMIT 1
+                )
+                """)
+    cur.execute("""
+                    SELECT 
+                    MONTH(v.dia) AS mes,
+                    COUNT(*) AS quantidade_vendas
+                    FROM venda v
+                    WHERE v.id_prato = @produto_menos_vendido
+                    GROUP BY MONTH(v.dia)
+                    ORDER BY quantidade_vendas DESC, MONTH(v.dia) ASC
+                """)
+    data = cur.fetchall()
+    cur.close()
+    return jsonify(data)
+
+
+
+
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
+
