@@ -289,20 +289,40 @@ def main():
                 idade = input('IDADE: ')
                 nascimento = input('DATA NASCIMENTO: ')
                 pontos = input('PONTOS: ')
-                cursor.execute(f'INSERT INTO cliente (nome, sexo, idade, nascimento, pontos) VALUES (\'{nome}\', \'{sexo}\', \'{idade}\', \'{nascimento}\', \'{pontos}\')')
+                cursor.execute(f'INSERT INTO cliente (nome, sexo, idade, nascimento, pontos) VALUES (\'{nome}\', \'{sexo}\', \'{idade}\', \'{nascimento}\', \'{pontos}\');')
             elif choice == 1: # insert prato
-                pass
+                nome = input('NOME: ')
+                descricao = input('DESCRICAO: ')
+                valor = input('VALOR: ')
+                disponibilidade = input('DISPONIVEL [0 - nao | 1 - sim]? ')
+                cursor.execute(f'INSERT INTO prato (nome, descricao, valor, disponibilidade) VALUES (\'{nome}\', \'{descricao}\', \'{valor}\', \'{disponibilidade}\');')
             elif choice == 2: # insert fornecedor
-                pass
+                nome = input('NOME: ')
+                estado_origem = input('ESTADO (SIGLA): ')
+                cursor.execute(f'INSERT INTO fornecedor (nome, estado_origem) VALUES (\'{nome}\', \'{estado_origem}\');')
             elif choice == 3: # insert ingredientes
-                pass
+                nome = input('NOME: ')
+                fabricacao = input('DATA FABRICACAO: ')
+                validade = input('DATA VALIDADE: ')
+                quant = input('QUANTIDADE: ')
+                obs = input('OBSERVACAO')
+                cursor.execute(f'INSERT INTO ingredientes (nome, data_fabricacao, data_validade, quantidade, observacao) VALUES (\'{nome}\', \'{fabricacao}\', \'{validade}\', \'{quant}\', \'{obs}\');')
             elif choice == 4: # insert usos
-                pass
+                prato = input('ID PRATO: ')
+                ingrediente = input('ID INGREDIENTE: ')
+                cursor.execute(f'INSERT INTO usos (id_prato, id_ingrediente) VALUES (\'{prato}\', \'{ingrediente}\');')
             else: # insert venda
-                pass
+                cliente = input('ID CLIENTE: ')
+                prato = input('ID PRATO: ')
+                quant = input('QUANTIDADE: ')
+                dia = input('DIA: ')
+                hora = input('HORA: ')
+                valor = input('VALOR: ')
+                cursor.execute(f'INSERT INTO venda (id_cliente, id_prato, quantidade, dia, hora, valor) VALUES (\'{cliente}\', \'{prato}\', \'{quant}\', \'{dia}\', \'{hora}\', \'{valor}\');')
+            connection.commit() # use when insert, update or delete
         elif choice == 2:
             cursor.execute(f'DROP DATABASE IF EXISTS {database_name}')
-        else:
+        else: # choice == 3
             create_db()
 
 main()
