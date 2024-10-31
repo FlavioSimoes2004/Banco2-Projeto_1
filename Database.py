@@ -90,7 +90,6 @@ CREATE TABLE IF NOT EXISTS venda(
 '''
 
 insert_into_tables = '''
--- Inserindo dados na tabela cliente
 INSERT INTO cliente (nome, sexo, idade, nascimento, pontos) VALUES
 ('Alice', 'f', 30, '1993-05-15', 100),
 ('Bruno', 'm', 25, '1998-02-20', 150),
@@ -103,7 +102,6 @@ INSERT INTO cliente (nome, sexo, idade, nascimento, pontos) VALUES
 ('Igor', 'm', 22, '2001-01-01', 70),
 ('Julia', 'f', 26, '1997-08-08', 130);
 
--- Inserindo dados na tabela prato
 INSERT INTO prato (nome, descricao, valor, disponibilidade) VALUES
 ('Pizza Margherita', 'Pizza classica com molho de tomate e queijo.', 25.50, TRUE),
 ('Bife a Parmegiana', 'Bife empanado coberto com queijo e molho.', 45.00, TRUE),
@@ -116,7 +114,6 @@ INSERT INTO prato (nome, descricao, valor, disponibilidade) VALUES
 ('Feijoada', 'Prato tipico brasileiro com feijao e carnes.', 50.00, TRUE),
 ('Brownie', 'Bolo de chocolate com nozes.', 15.00, TRUE);
 
--- Inserindo dados na tabela fornecedor
 INSERT INTO fornecedor (nome, estado_origem) VALUES
 ('Fornecedor A', 'SP'),
 ('Fornecedor B', 'MG'),
@@ -129,7 +126,6 @@ INSERT INTO fornecedor (nome, estado_origem) VALUES
 ('Fornecedor I', 'PE'),
 ('Fornecedor J', 'ES');
 
--- Inserindo dados na tabela ingredientes
 INSERT INTO ingredientes (nome, data_fabricacao, data_validade, quantidade, observacao) VALUES
 ('Farinha', '2024-01-10', '2025-01-10', 100, 'Usar para paes e massas.'),
 ('Queijo', '2024-02-15', '2024-07-15', 50, 'Queijo mussarela.'),
@@ -142,20 +138,18 @@ INSERT INTO ingredientes (nome, data_fabricacao, data_validade, quantidade, obse
 ('Chocolate', '2024-02-20', '2025-02-20', 20, 'Chocolate meio amargo.'),
 ('Peixe', '2024-03-10', '2024-04-10', 25, 'Peixe fresco do dia.');
 
--- Inserindo dados na tabela usos
 INSERT INTO usos (id_prato, id_ingrediente) VALUES
-(1, 1),  -- Pizza Margherita usa Farinha
-(1, 2),  -- Pizza Margherita usa Queijo
-(2, 3),  -- Bife a Parmegiana usa Carne
-(3, 9),  -- Sushi usa Peixe
-(4, 5),  -- Salada Caesar usa Alface
-(5, 1),  -- Espaguete a Carbonara usa Farinha (massa)
-(6, 3),  -- Lasagna usa Carne
-(7, 3),  -- Tacos usa Carne
-(8, 1),  -- Burger usa Farinha (pão)
-(9, 4);  -- Feijoada usa Tomate
+(1, 1),
+(1, 2),
+(2, 3),
+(3, 9),
+(4, 5),
+(5, 1),
+(6, 3),
+(7, 3),
+(8, 1),
+(9, 4);
 
--- Inserindo dados na tabela venda
 INSERT INTO venda (id_cliente, id_prato, quantidade, dia, hora, valor) VALUES
 (1, 1, 2, '2024-10-01', '12:00:00', 51.00),
 (2, 3, 1, '2024-10-02', '19:00:00', 60.00),
@@ -167,7 +161,6 @@ INSERT INTO venda (id_cliente, id_prato, quantidade, dia, hora, valor) VALUES
 (8, 8, 1, '2024-10-08', '14:00:00', 28.00),
 (9, 9, 1, '2024-10-09', '11:00:00', 50.00),
 (10, 10, 2, '2024-10-10', '15:00:00', 30.00);
-
 '''
 
 create_users_query = '''
@@ -249,28 +242,68 @@ END;
 '''
 ]
 
-drop_query = f'DROP DATABASE IF EXISTS {database_name}'
-
 queries = [
     create_tables_query,
     create_users_query,
     insert_into_tables
 ]
 
-cursor.execute(f'CREATE DATABASE IF NOT EXISTS {database_name}')
-cursor.execute(f'USE {database_name}')
-for query in queries:
-    query = query.replace('\n', '')
-    query = query.split(';')
-    query.pop()
+def create_db():
+    cursor.execute(f'CREATE DATABASE IF NOT EXISTS {database_name}')
+    cursor.execute(f'USE {database_name}')
+    for query in queries:
+        query = query.replace('\n', '')
+        query = query.split(';')
+        query.pop()
 
-    for q in query:
-        cursor.execute(q)
+        for q in query:
+            cursor.execute(q)
 
-cursor.execute(create_function_query)
-for query in create_procedures_query:
-    cursor.execute(query)
-for query in create_views_query:
-    cursor.execute(query)
-for query in create_triggers_query:
-    cursor.execute(query)
+    cursor.execute(create_function_query)
+    for query in create_procedures_query:
+        cursor.execute(query)
+    for query in create_views_query:
+        cursor.execute(query)
+    for query in create_triggers_query:
+        cursor.execute(query)
+
+def main():
+    create_db()
+
+    choice = None
+    while(1):
+        choice = int(input('[0] END\n[1] INSERT\n[2] DROP DATABASE\n[3] RECREATE DATABASE\nCHOOSE: '))
+        while choice < 0 or choice > 3:
+            choice = int(input('Invalid choice, choose again: '))
+        
+        if choice == 0:
+            break
+        elif choice == 1:
+            choice = int(input('[0] CLIENTE\n[1] PRATO\n[2] FORNECEDOR\n[3] ingredientes\n[4] USOS\n[5] VENDA\nINSERT ON: '))
+            while choice < 0 or choice > 5:
+                choice = int(input('Invalid choice, choose again: '))
+
+            if choice == 0: # insert cliente
+                nome = input('NOME: ')
+                sexo = input('SEXO [\'m\' or \'f\' or \'o\']: ')
+                idade = input('IDADE: ')
+                nascimento = input('DATA NASCIMENTO: ')
+                pontos = input('PONTOS: ')
+                cursor.execute(f'INSERT INTO cliente (nome, sexo, idade, nascimento, pontos) VALUES (\'{nome}\', \'{sexo}\', \'{idade}\', \'{nascimento}\', \'{pontos}\')')
+            elif choice == 1: # insert prato
+                pass
+            elif choice == 2: # insert fornecedor
+                pass
+            elif choice == 3: # insert ingredientes
+                pass
+            elif choice == 4: # insert usos
+                pass
+            else: # insert venda
+                pass
+        elif choice == 2:
+            cursor.execute(f'DROP DATABASE IF EXISTS {database_name}')
+        else:
+            create_db()
+
+main()
+#create_db()
