@@ -101,19 +101,19 @@ INSERT INTO cliente (nome, sexo, idade, nascimento, pontos) VALUES
 ('Gustavo', 'm', 27, '1996-06-18', 90),
 ('Helena', 'f', 29, '1994-09-03', 110),
 ('Igor', 'm', 22, '2001-01-01', 70),
-('Júlia', 'f', 26, '1997-08-08', 130);
+('Julia', 'f', 26, '1997-08-08', 130);
 
 -- Inserindo dados na tabela prato
 INSERT INTO prato (nome, descricao, valor, disponibilidade) VALUES
-('Pizza Margherita', 'Pizza clássica com molho de tomate e queijo.', 25.50, TRUE),
-('Bife à Parmegiana', 'Bife empanado coberto com queijo e molho.', 45.00, TRUE),
+('Pizza Margherita', 'Pizza classica com molho de tomate e queijo.', 25.50, TRUE),
+('Bife a Parmegiana', 'Bife empanado coberto com queijo e molho.', 45.00, TRUE),
 ('Sushi', 'Variados tipos de sushi com peixe fresco.', 60.00, TRUE),
 ('Salada Caesar', 'Salada com frango grelhado e molho Caesar.', 30.00, TRUE),
-('Espaguete à Carbonara', 'Massa com molho cremoso de ovos e queijo.', 35.00, TRUE),
+('Espaguete a Carbonara', 'Massa com molho cremoso de ovos e queijo.', 35.00, TRUE),
 ('Lasagna', 'Camadas de massa com carne e molho de tomate.', 40.00, TRUE),
 ('Tacos', 'Tacos recheados com carne e vegetais.', 20.00, TRUE),
-('Burger', 'Hambúrguer com queijo, alface e tomate.', 28.00, TRUE),
-('Feijoada', 'Prato típico brasileiro com feijão e carnes.', 50.00, TRUE),
+('Burger', 'Hamburguer com queijo, alface e tomate.', 28.00, TRUE),
+('Feijoada', 'Prato tipico brasileiro com feijao e carnes.', 50.00, TRUE),
 ('Brownie', 'Bolo de chocolate com nozes.', 15.00, TRUE);
 
 -- Inserindo dados na tabela fornecedor
@@ -131,7 +131,7 @@ INSERT INTO fornecedor (nome, estado_origem) VALUES
 
 -- Inserindo dados na tabela ingredientes
 INSERT INTO ingredientes (nome, data_fabricacao, data_validade, quantidade, observacao) VALUES
-('Farinha', '2024-01-10', '2025-01-10', 100, 'Usar para pães e massas.'),
+('Farinha', '2024-01-10', '2025-01-10', 100, 'Usar para paes e massas.'),
 ('Queijo', '2024-02-15', '2024-07-15', 50, 'Queijo mussarela.'),
 ('Carne', '2024-03-01', '2024-05-01', 30, 'Carne bovina.'),
 ('Tomate', '2024-04-05', '2024-06-05', 80, 'Tomate fresco.'),
@@ -146,10 +146,10 @@ INSERT INTO ingredientes (nome, data_fabricacao, data_validade, quantidade, obse
 INSERT INTO usos (id_prato, id_ingrediente) VALUES
 (1, 1),  -- Pizza Margherita usa Farinha
 (1, 2),  -- Pizza Margherita usa Queijo
-(2, 3),  -- Bife à Parmegiana usa Carne
+(2, 3),  -- Bife a Parmegiana usa Carne
 (3, 9),  -- Sushi usa Peixe
 (4, 5),  -- Salada Caesar usa Alface
-(5, 1),  -- Espaguete à Carbonara usa Farinha (massa)
+(5, 1),  -- Espaguete a Carbonara usa Farinha (massa)
 (6, 3),  -- Lasagna usa Carne
 (7, 3),  -- Tacos usa Carne
 (8, 1),  -- Burger usa Farinha (pão)
@@ -167,15 +167,16 @@ INSERT INTO venda (id_cliente, id_prato, quantidade, dia, hora, valor) VALUES
 (8, 8, 1, '2024-10-08', '14:00:00', 28.00),
 (9, 9, 1, '2024-10-09', '11:00:00', 50.00),
 (10, 10, 2, '2024-10-10', '15:00:00', 30.00);
+
 '''
 
 create_users_query = '''
-CREATE USER 'Administrador'@'localhost' IDENTIFIED BY '1234';
+CREATE USER IF NOT EXISTS 'Administrador'@'localhost' IDENTIFIED BY '1234';
 GRANT ALL PRIVILEGES ON Restaurante.* TO 'Administrador'@'localhost';
 
-CREATE USER 'Gerente'@'localhost' IDENTIFIED BY '1234';
+CREATE USER IF NOT EXISTS 'Gerente'@'localhost' IDENTIFIED BY '1234';
 
-CREATE USER 'Funcionario'@'localhost' IDENTIFIED BY '1234';
+CREATE USER IF NOT EXISTS 'Funcionario'@'localhost' IDENTIFIED BY '1234';
 GRANT INSERT, SELECT ON Restaurante.venda TO 'Funcionario'@'localhost';
 
 FLUSH PRIVILEGES;
@@ -197,43 +198,30 @@ BEGIN
 END;
 '''
 
-create_views_query = '''
+create_views_query = ['''
 CREATE VIEW IF NOT EXISTS average_gender_age AS
 SELECT sexo, AVG(idade) 
 FROM cliente 
 GROUP BY sexo;
-
-CREATE VIEW IF NOT EXISTS rush_time AS
+''',
+'''CREATE VIEW IF NOT EXISTS rush_time AS
 SELECT HOUR(hora) AS hour_gap, SUM(valor) AS total_vendas
 FROM venda
 GROUP BY HOUR(hora)
 ORDER BY total_vendas DESC;
 '''
+]
 
-create_procedures_query = '''
+create_procedures_query = ['''
 CREATE PROCEDURE IF NOT EXISTS Reajuste(IN percentual DOUBLE)
 BEGIN
     UPDATE prato
     SET valor = valor + (valor * (percentual/100));
 END;
-
-CREATE PROCEDURE IF NOT EXISTS Sorteio()
-BEGIN
-
-END;
-
-CREATE PROCEDURE IF NOT EXISTS Estatisticas()
-BEGIN
-
-END;
-
-CREATE PROCEDURE IF NOT EXISTS Gastar_pontos()
-BEGIN
-
-END;
 '''
+]
 
-create_triggers_query = '''
+create_triggers_query = ['''
 CREATE TRIGGER IF NOT EXISTS ganhar_ponto
 AFTER INSERT ON venda
 FOR EACH ROW
@@ -242,8 +230,8 @@ BEGIN
     SET pontos = pontos + Calculo(NEW.valor)
     WHERE NEW.id_cliente = id;
 END;
-
-DELIMITER #
+''',
+'''
 CREATE TRIGGER IF NOT EXISTS comida_vencida
 AFTER UPDATE ON ingredientes
 FOR EACH ROW
@@ -257,18 +245,32 @@ BEGIN
             WHERE id_ingrediente = NEW.id
         );
     END IF;
-END #
-DELIMITER ;
+END;
 '''
+]
 
 drop_query = f'DROP DATABASE IF EXISTS {database_name}'
 
+queries = [
+    create_tables_query,
+    create_users_query,
+    insert_into_tables
+]
+
 cursor.execute(f'CREATE DATABASE IF NOT EXISTS {database_name}')
 cursor.execute(f'USE {database_name}')
-cursor.execute(create_tables_query)
-cursor.execute(insert_into_tables)
-cursor.execute(create_users_query)
+for query in queries:
+    query = query.replace('\n', '')
+    query = query.split(';')
+    query.pop()
+
+    for q in query:
+        cursor.execute(q)
+
 cursor.execute(create_function_query)
-cursor.execute(create_procedures_query)
-cursor.execute(create_views_query)
-cursor.execute(create_triggers_query)
+for query in create_procedures_query:
+    cursor.execute(query)
+for query in create_views_query:
+    cursor.execute(query)
+for query in create_triggers_query:
+    cursor.execute(query)
