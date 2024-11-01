@@ -248,7 +248,11 @@ queries = [
     insert_into_tables
 ]
 
+def drop_db():
+    cursor.execute(f'DROP DATABASE IF EXISTS {database_name}')
+
 def create_db():
+    drop_db()
     cursor.execute(f'CREATE DATABASE IF NOT EXISTS {database_name}')
     cursor.execute(f'USE {database_name}')
     for query in queries:
@@ -298,14 +302,14 @@ def main():
                 cursor.execute(f'INSERT INTO prato (nome, descricao, valor, disponibilidade) VALUES (\'{nome}\', \'{descricao}\', \'{valor}\', \'{disponibilidade}\');')
             elif choice == 2: # insert fornecedor
                 nome = input('NOME: ')
-                estado_origem = input('ESTADO (SIGLA): ')
+                estado_origem = input('ESTADO (sigla maiusculo): ')
                 cursor.execute(f'INSERT INTO fornecedor (nome, estado_origem) VALUES (\'{nome}\', \'{estado_origem}\');')
             elif choice == 3: # insert ingredientes
                 nome = input('NOME: ')
                 fabricacao = input('DATA FABRICACAO: ')
                 validade = input('DATA VALIDADE: ')
                 quant = input('QUANTIDADE: ')
-                obs = input('OBSERVACAO')
+                obs = input('OBSERVACAO: ')
                 cursor.execute(f'INSERT INTO ingredientes (nome, data_fabricacao, data_validade, quantidade, observacao) VALUES (\'{nome}\', \'{fabricacao}\', \'{validade}\', \'{quant}\', \'{obs}\');')
             elif choice == 4: # insert usos
                 prato = input('ID PRATO: ')
@@ -321,7 +325,7 @@ def main():
                 cursor.execute(f'INSERT INTO venda (id_cliente, id_prato, quantidade, dia, hora, valor) VALUES (\'{cliente}\', \'{prato}\', \'{quant}\', \'{dia}\', \'{hora}\', \'{valor}\');')
             connection.commit() # use when insert, update or delete
         elif choice == 2:
-            cursor.execute(f'DROP DATABASE IF EXISTS {database_name}')
+            drop_db()
         else: # choice == 3
             create_db()
 
