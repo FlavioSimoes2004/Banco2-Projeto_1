@@ -242,6 +242,23 @@ END;
 '''
 ]
 
+valorGanhoProdutoMenosVendio = """
+                SELECT p.nome, SUM(v.valor) AS valor_total
+                FROM venda v
+                INNER JOIN prato p ON v.id_prato = p.id
+                GROUP BY p.id
+                ORDER BY valor_total ASC
+                LIMIT 1;
+"""
+
+mesMenorVendasMenosVendido = """
+TODO
+"""
+mesMaiorVendasMenosVendido = """
+TODO
+"""
+
+
 queries = [
     create_tables_query,
     create_users_query,
@@ -271,7 +288,7 @@ def create_db():
     for query in create_triggers_query:
         cursor.execute(query)
 
-def main():
+if __name__ == "__main__":
     create_db()
 
     choice = None
@@ -329,5 +346,4 @@ def main():
         else: # choice == 3
             create_db()
 
-main()
 #create_db()
