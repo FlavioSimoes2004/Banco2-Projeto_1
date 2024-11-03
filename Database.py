@@ -2,7 +2,7 @@ import mysql.connector
 
 connection = mysql.connector.connect(
     host='localhost',
-    user='administrador',
+    user='adimnistrador',
     password='1234'
 )
 
@@ -242,6 +242,39 @@ END;
 '''
 ]
 
+valorGanhoProdutoMenosVendido = """
+                SELECT p.nome, SUM(v.valor) AS valor_total
+                FROM venda v
+                INNER JOIN prato p ON v.id_prato = p.id
+                GROUP BY p.id
+                ORDER BY valor_total ASC
+                LIMIT 1;
+"""
+setMesMenor = """
+                    SET @produto_menos_vendido = (
+                    SELECT p.id
+                    FROM venda v
+                    INNER JOIN prato p ON v.id_prato = p.id
+                    GROUP BY p.id
+                    ORDER BY SUM(v.valor) ASC
+                    LIMIT 1
+                    );
+"""
+mesMenor = """
+                    SELECT 
+                    MONTH(v.dia) AS mes,
+                    COUNT(*) AS quantidade_vendas
+                    FROM venda v
+                    WHERE v.id_prato = @produto_menos_vendido
+                    GROUP BY MONTH(v.dia)
+                    ORDER BY quantidade_vendas DESC, MONTH(v.dia) ASC;
+                
+"""
+mesMaiorVendasMenosVendido = """
+TODO
+"""
+
+
 queries = [
     create_tables_query,
     create_users_query,
@@ -271,13 +304,13 @@ def create_db():
     for query in create_triggers_query:
         cursor.execute(query)
 
-def main():
+if __name__ == "__main__":
     create_db()
 
     choice = None
     while(1):
-        choice = int(input('[0] END\n[1] INSERT\n[2] DROP DATABASE\n[3] RECREATE DATABASE\nCHOOSE: '))
-        while choice < 0 or choice > 3:
+        choice = int(input('[0] END\n[1] INSERT\n[2] DROP DATABASE\n[3] RECREATE DATABASE\n[4] VER PRODUTO MENOS VENDIDO\n[5] MES DE MENOR VENDA DO PRODUTO MENOS VENDIDO\nCHOOSE: '))
+        while choice < 0 or choice > 10:
             choice = int(input('Invalid choice, choose again: '))
         
         if choice == 0:
@@ -326,8 +359,15 @@ def main():
             connection.commit() # use when insert, update or delete
         elif choice == 2:
             drop_db()
-        else: # choice == 3
+        elif choice == 3: # choice == 3
             create_db()
-
-main()
+        elif choice == 4:
+            cursor.execute(valorGanhoProdutoMenosVendido)
+            for i in cursor:
+                print(i)
+        elif choice == 5:
+            cursor.execute(setMesMenor)
+            cursor.execute(mesMenor)
+            for mes, quantidade in cursor:
+                print("Mes: ", mes,"Quantidade: ", quantidade)
 #create_db()
