@@ -39,6 +39,19 @@ BEGIN
 END//
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS PratMenosVend;
+DELIMITER //
+CREATE PROCEDURE PratMenosVend()
+BEGIN
+	SELECT  p.nome AS prato, sum(v.valor * v.quantidade) AS maior_ganho
+    FROM venda v
+    JOIN prato p ON v.id_prato = p.id
+    GROUP BY v.id_prato
+    ORDER BY maior_ganho ASC
+	LIMIT 1;
+END//
+DELIMITER ;
+
 CREATE PROCEDURE IF NOT EXISTS Gastar_pontos()
 BEGIN
 
