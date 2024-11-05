@@ -21,10 +21,26 @@ BEGIN
 END//
 DELIMITER ;
 
-CREATE PROCEDURE IF NOT EXISTS Estatisticas()
+DROP PROCEDURE IF EXISTS Estatisticas;
+DELIMITER //
+CREATE PROCEDURE Estatisticas()
 BEGIN
-
-END;
+	SELECT  p.nome AS prato, sum(v.valor * v.quantidade) AS maior_ganho
+    FROM venda v
+    JOIN prato p ON v.id_prato = p.id
+    GROUP BY v.id_prato
+    ORDER BY maior_ganho DESC
+	LIMIT 1;
+    
+    SELECT  p.nome AS prato, sum(v.valor * v.quantidade) AS menor_ganho
+    FROM venda v
+    JOIN prato p ON v.id_prato = p.id
+    GROUP BY v.id_prato
+    ORDER BY menor_ganho ASC
+	LIMIT 1;
+END//
+DELIMITER ;
+call Estatisticas();
 
 CREATE PROCEDURE IF NOT EXISTS Gastar_pontos()
 BEGIN
