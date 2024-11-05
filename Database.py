@@ -242,6 +242,30 @@ END;
 '''
 ]
 
+Estatisticas = ["""
+DROP PROCEDURE IF EXISTS Estatisticas;
+DELIMITER //
+CREATE PROCEDURE Estatisticas()
+BEGIN
+	SELECT  p.nome AS prato, sum(v.valor * v.quantidade) AS maior_ganho
+    FROM venda v
+    JOIN prato p ON v.id_prato = p.id
+    GROUP BY v.id_prato
+    ORDER BY maior_ganho DESC
+	LIMIT 1;
+    
+    SELECT  p.nome AS prato, sum(v.valor * v.quantidade) AS menor_ganho
+    FROM venda v
+    JOIN prato p ON v.id_prato = p.id
+    GROUP BY v.id_prato
+    ORDER BY menor_ganho ASC
+	LIMIT 1;
+END//
+DELIMITER ;
+call Estatisticas();
+"""]
+
+
 valorGanhoProdutoMenosVendido = """
                 SELECT p.nome, SUM(v.valor) AS valor_total
                 FROM venda v
@@ -370,4 +394,8 @@ if __name__ == "__main__":
             cursor.execute(mesMenor)
             for mes, quantidade in cursor:
                 print("Mes: ", mes,"Quantidade: ", quantidade)
+        elif choice == 6:
+            cursor.execute("CALL Estatisticas();")
+            for i in cursor:
+                print(i)
 #create_db()
