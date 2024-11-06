@@ -25,35 +25,31 @@ DROP PROCEDURE IF EXISTS Estatisticas;
 DELIMITER //
 CREATE PROCEDURE Estatisticas()
 BEGIN
-	SELECT  p.nome AS prato, sum(v.valor * v.quantidade) AS maior_ganho
+    DECLARE produto_mais_vendido INT;
+    DECLARE maior_valor_ganho DECIMAL(10, 3);
+
+    SELECT p.nome AS prato, SUM(v.valor * v.quantidade) AS maior_ganho
     FROM venda v
     JOIN prato p ON v.id_prato = p.id
     GROUP BY v.id_prato
     ORDER BY maior_ganho DESC
-	LIMIT 1;
-    
-    SELECT  p.nome AS prato, sum(v.valor * v.quantidade) AS menor_ganho
+    LIMIT 1;
+
+    SELECT p.nome AS prato, SUM(v.valor * v.quantidade) AS menor_ganho
     FROM venda v
     JOIN prato p ON v.id_prato = p.id
     GROUP BY v.id_prato
     ORDER BY menor_ganho ASC
-	LIMIT 1;
-
-    DECLARE produto_mais_vendido INT;
+    LIMIT 1;
 
     SELECT v.id_prato, SUM(v.valor * v.quantidade) AS maior_ganho
-    INTO produto_mais_vendido, @maior_valor_ganho
+    INTO produto_mais_vendido, maior_valor_ganho
     FROM venda v
     GROUP BY v.id_prato
     ORDER BY maior_ganho DESC
     LIMIT 1;
 
-    SELECT p.nome AS prato, @maior_valor_ganho AS valor_ganho_total
-    FROM prato p
-    WHERE p.id = produto_mais_vendido;
-        LIMIT 1;
-    
-    SELECT p.nome AS prato, @maior_valor_ganho AS valor_ganho_total
+    SELECT p.nome AS prato, maior_valor_ganho AS valor_ganho_total
     FROM prato p
     WHERE p.id = produto_mais_vendido;
 
@@ -72,6 +68,7 @@ BEGIN
     LIMIT 1;
 END//
 DELIMITER ;
+
 call Estatisticas();
 
 CREATE PROCEDURE IF NOT EXISTS Gastar_pontos()
