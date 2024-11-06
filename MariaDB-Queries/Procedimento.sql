@@ -78,3 +78,50 @@ CREATE PROCEDURE IF NOT EXISTS Gastar_pontos()
 BEGIN
 
 END;
+
+DELIMITER $$
+
+CREATE PROCEDURE comprar_prato_com_pontos(IN p_id_cliente INT, IN p_id_prato INT)
+BEGIN
+    DECLARE pontos_cliente INT;
+    DECLARE valor_prato DECIMAL(10, 3);
+    DECLARE pontos_necessarios INT;
+    DECLARE pontos_extra INT DEFAULT 0;
+    DECLARE novo_saldo_pontos INT;
+
+    SELECT pontos INTO pontos_cliente
+    FROM cliente
+    WHERE id = p_id_cliente;
+
+    IF pontos_cliente <= 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cliente não tem pontos suficientes.';
+    END IF;
+
+    SELECT valor INTO valor_prato
+    FROM prato
+    WHERE id = p_id_prato;
+
+    SET pontos_necessarios = FLOOR(valor_prato);
+
+    IF valor_prato > pontos_necessarios THEN
+        SET pontos_extra = 1;
+    END IF;
+
+    IF pontos_cliente < (pontos_necessarios + pontos_extra) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Pontos insuficientes para comprar o prato.';
+    END IF;
+
+    SET novo_saldo_pontos = pontos_cliente - (pontos_necessarios + pontos_extra);
+
+    UPDATE cliente
+    SET pontos = novo_saldo_pontos
+    WHERE id = p_id_cliente;
+
+    INSERT INTO venda (id_cliente, id_prato, quantidade, dia, hora, valor)
+    VALUES (p_id_cliente, p_id_prato, 1, CURDATE(), CURTIME(), valor_prato);
+
+    SELECT 'Compra realizada com sucesso!';
+
+END$$
+
+DELIMITER ;
