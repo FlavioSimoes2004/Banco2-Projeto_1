@@ -52,3 +52,23 @@ BEGIN
 END//
 
 DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER verificar_disponibilidade
+BEFORE INSERT ON venda
+FOR EACH ROW
+BEGIN
+    DECLARE prato_disponivel BOOLEAN;
+
+    SELECT disponibilidade INTO prato_disponivel
+    FROM prato
+    WHERE id = NEW.id_prato;
+
+    IF prato_disponivel = FALSE THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'O prato selecionado está indisponível';
+    END IF;
+END$$
+
+DELIMITER ;
