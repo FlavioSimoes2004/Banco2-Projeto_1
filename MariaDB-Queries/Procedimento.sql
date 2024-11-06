@@ -38,6 +38,20 @@ BEGIN
     GROUP BY v.id_prato
     ORDER BY menor_ganho ASC
 	LIMIT 1;
+
+    DECLARE produto_mais_vendido INT;
+
+    SELECT v.id_prato, SUM(v.valor * v.quantidade) AS maior_ganho
+    INTO produto_mais_vendido, @maior_valor_ganho
+    FROM venda v
+    GROUP BY v.id_prato
+    ORDER BY maior_ganho DESC
+    LIMIT 1;
+
+    SELECT p.nome AS prato, @maior_valor_ganho AS valor_ganho_total
+    FROM prato p
+    WHERE p.id = produto_mais_vendido;
+    
 END//
 DELIMITER ;
 call Estatisticas();
