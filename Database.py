@@ -2,7 +2,7 @@ import mysql.connector
 
 connection = mysql.connector.connect(
     host='localhost',
-    user='adimnistrador',
+    user='administrador',
     password='1234'
 )
 
@@ -151,16 +151,18 @@ INSERT INTO usos (id_prato, id_ingrediente) VALUES
 (9, 4);
 
 INSERT INTO venda (id_cliente, id_prato, quantidade, dia, hora, valor) VALUES
-(1, 1, 2, '2024-10-01', '12:00:00', 51.00),
-(2, 3, 1, '2024-10-02', '19:00:00', 60.00),
-(3, 2, 3, '2024-10-03', '20:30:00', 135.00),
-(4, 4, 1, '2024-10-04', '13:00:00', 30.00),
-(5, 5, 2, '2024-10-05', '18:00:00', 70.00),
-(6, 6, 1, '2024-10-06', '21:00:00', 40.00),
-(7, 7, 4, '2024-10-07', '12:00:00', 80.00),
-(8, 8, 1, '2024-10-08', '14:00:00', 28.00),
+(1, 1, 10, '2024-10-01', '12:00:00', 51.00),
+(2, 3, 10, '2024-10-02', '19:00:00', 60.00),
+(3, 2, 10, '2024-10-03', '20:30:00', 135.00),
+(4, 4, 10, '2024-10-04', '13:00:00', 30.00),
+(5, 5, 10, '2024-10-05', '18:00:00', 70.00),
+(6, 6, 10, '2024-10-06', '21:00:00', 40.00),
+(7, 7, 10, '2024-10-07', '12:00:00', 80.00),
+(8, 8, 10, '2024-10-08', '14:00:00', 28.00),
 (9, 9, 1, '2024-10-09', '11:00:00', 50.00),
-(10, 10, 2, '2024-10-10', '15:00:00', 30.00);
+(9, 9, 3, '2024-11-10', '11:00:00', 50.00),
+(9, 9, 4, '2024-12-11', '11:00:00', 50.00),
+(10, 10, 10, '2024-10-10', '15:00:00', 30.00);
 '''
 
 create_users_query = '''
@@ -199,7 +201,8 @@ SELECT sexo, AVG(idade)
 FROM cliente 
 GROUP BY sexo;
 ''',
-'''CREATE VIEW IF NOT EXISTS rush_time AS
+'''
+CREATE VIEW IF NOT EXISTS rush_time AS
 SELECT HOUR(hora) AS hour_gap, SUM(valor) AS total_vendas
 FROM venda
 GROUP BY HOUR(hora)
@@ -212,7 +215,8 @@ CREATE PROCEDURE IF NOT EXISTS Reajuste(IN percentual DOUBLE)
 BEGIN
     UPDATE prato
     SET valor = valor + (valor * (percentual/100));
-END;''',
+END;
+''',
 '''
 CREATE PROCEDURE IF NOT EXISTS Sorteio()
 BEGIN
@@ -342,13 +346,70 @@ BEGIN
         );
     END IF;
 END;
+''',
+'''
+CREATE TRIGGER verificar_disponibilidade
+BEFORE INSERT ON venda
+FOR EACH ROW
+BEGIN
+    DECLARE prato_disponivel BOOLEAN;
+
+    SELECT disponibilidade INTO prato_disponivel
+    FROM prato
+    WHERE id = NEW.id_prato;
+
+    IF prato_disponivel = FALSE THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'O prato selecionado está indisponível';
+    END IF;
+END;
 '''
 ]
 
-mesMaiorVendasMenosVendido = """
-TODO
+setMesMenor = """
+                    SET @produto_menos_vendido = (
+                    SELECT p.id
+                    FROM venda v
+                    INNER JOIN prato p ON v.id_prato = p.id
+                    GROUP BY p.id
+                    ORDER BY SUM(v.valor) ASC
+                    LIMIT 1
+                    );
 """
-
+mesMenor = """
+                    SELECT
+                    MONTH(dia) AS mes,
+                    YEAR(dia) AS ano,
+                    SUM(quantidade) AS total_vendido
+                    FROM venda
+                    WHERE id_prato = (
+                    SELECT id_prato
+                    FROM venda
+                    GROUP BY id_prato
+                    ORDER BY SUM(quantidade) ASC
+                    LIMIT 1
+                    )
+                    GROUP BY YEAR(dia), MONTH(dia)
+                    ORDER BY total_vendido ASC
+                    LIMIT 1;
+"""
+mesMaior = """
+                    SELECT
+                    MONTH(dia) AS mes,
+                    YEAR(dia) AS ano,
+                    SUM(quantidade) AS total_vendido
+                    FROM venda
+                    WHERE id_prato = (
+                    SELECT id_prato
+                    FROM venda
+                    GROUP BY id_prato
+                    ORDER BY SUM(quantidade) ASC
+                    LIMIT 1
+                    )
+                    GROUP BY YEAR(dia), MONTH(dia)
+                    ORDER BY total_vendido DESC
+                    LIMIT 1;
+"""
 
 queries = [
     create_tables_query,
@@ -384,8 +445,8 @@ if __name__ == "__main__":
 
     choice = None
     while(1):
-        choice = int(input('[0] END\n[1] INSERT\n[2] DROP DATABASE\n[3] RECREATE DATABASE\n[4] VER PRODUTO MENOS VENDIDO\n[5] MES DE MENOR VENDA DO PRODUTO MENOS VENDIDO\nCHOOSE: '))
-        while choice < 0 or choice > 10:
+        choice = int(input('[0] END\n[1] INSERT\n[2] DROP DATABASE\n[3] RECREATE DATABASE\n[4] VER PRODUTO MENOS VENDIDO\n[5] MES DE MENOR VENDA DO PRODUTO MENOS VENDIDO\n[6] MES DE MAIOR VENDA DO PRODUTO MENOS VENDIDO\n[7] COMPRAR PRATO COM PONTOS\nCHOOSE: '))
+        while choice < 0 or choice > 7:
             choice = int(input('Invalid choice, choose again: '))
         
         if choice == 0:
@@ -443,6 +504,17 @@ if __name__ == "__main__":
         elif choice == 5:
             cursor.execute(setMesMenor)
             cursor.execute(mesMenor)
-            for mes, quantidade in cursor:
-                print("Mes: ", mes,"Quantidade: ", quantidade)
+            for i in cursor:
+                print(i)
+        elif choice == 6:
+            cursor.execute(mesMaior)
+            print(*cursor)
+        elif choice == 7:
+            client_id = input("Digite o id do cliente: ")
+            dish_id = input("Digite o id do prato: ")
+            try:
+                cursor.execute(f'CALL comprar_prato_com_pontos({client_id}, {dish_id});')
+                print(cursor.fetchone())
+            except:
+                print('Pontos insuficientes!')
 #create_db()
