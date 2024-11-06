@@ -43,7 +43,6 @@ BEGIN
             LEAVE read_loop;
         END IF;
         
-        -- Reduz a quantidade do ingrediente em 1
         UPDATE ingredientes
         SET quantidade = quantidade - 1
         WHERE id = ingrediente_id;
