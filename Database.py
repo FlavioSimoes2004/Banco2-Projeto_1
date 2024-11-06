@@ -168,6 +168,8 @@ CREATE USER IF NOT EXISTS 'Administrador'@'localhost' IDENTIFIED BY '1234';
 GRANT ALL PRIVILEGES ON Restaurante.* TO 'Administrador'@'localhost';
 
 CREATE USER IF NOT EXISTS 'Gerente'@'localhost' IDENTIFIED BY '1234';
+GRANT SELECT, UPDATE, DELETE ON Restaurante.* TO 'Gerente'@'localhost';
+FLUSH PRIVILEGES;
 
 CREATE USER IF NOT EXISTS 'Funcionario'@'localhost' IDENTIFIED BY '1234';
 GRANT INSERT, SELECT ON Restaurante.venda TO 'Funcionario'@'localhost';
@@ -210,7 +212,26 @@ CREATE PROCEDURE IF NOT EXISTS Reajuste(IN percentual DOUBLE)
 BEGIN
     UPDATE prato
     SET valor = valor + (valor * (percentual/100));
-                           
+END;''',
+'''
+CREATE PROCEDURE IF NOT EXISTS Sorteio()
+BEGIN
+    DECLARE random_id INT;
+    
+    SELECT id INTO random_id
+    FROM cliente
+    ORDER BY RAND()
+    LIMIT 1;
+    
+    UPDATE cliente
+    SET pontos = pontos + 100
+    WHERE id = random_id;
+END;
+'''
+,
+    '''                           
+CREATE PROCEDURE IF NOT EXISTS Estatisticas()
+BEGIN
     SELECT  p.nome AS prato, sum(v.valor * v.quantidade) AS maior_ganho
     FROM venda v
     JOIN prato p ON v.id_prato = p.id
@@ -248,6 +269,50 @@ BEGIN
     WHERE v.id_prato = @produto_menos_vendido
     GROUP BY MONTH(v.dia)
     ORDER BY quantidade_vendas DESC, MONTH(v.dia) ASC;
+END;
+''',
+'''
+CREATE PROCEDURE IF NOT EXISTS comprar_prato_com_pontos(IN p_id_cliente INT, IN p_id_prato INT)
+BEGIN
+    DECLARE pontos_cliente INT;
+    DECLARE valor_prato DECIMAL(10, 3);
+    DECLARE pontos_necessarios INT;
+    DECLARE pontos_extra INT DEFAULT 0;
+    DECLARE novo_saldo_pontos INT;
+
+    SELECT pontos INTO pontos_cliente
+    FROM cliente
+    WHERE id = p_id_cliente;
+
+    IF pontos_cliente <= 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cliente não tem pontos suficientes.';
+    END IF;
+
+    SELECT valor INTO valor_prato
+    FROM prato
+    WHERE id = p_id_prato;
+
+    SET pontos_necessarios = FLOOR(valor_prato);
+
+    IF valor_prato > pontos_necessarios THEN
+        SET pontos_extra = 1;
+    END IF;
+
+    IF pontos_cliente < (pontos_necessarios + pontos_extra) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Pontos insuficientes para comprar o prato.';
+    END IF;
+
+    SET novo_saldo_pontos = pontos_cliente - (pontos_necessarios + pontos_extra);
+
+    UPDATE cliente
+    SET pontos = novo_saldo_pontos
+    WHERE id = p_id_cliente;
+
+    INSERT INTO venda (id_cliente, id_prato, quantidade, dia, hora, valor)
+    VALUES (p_id_cliente, p_id_prato, 1, CURDATE(), CURTIME(), valor_prato);
+
+    SELECT 'Compra realizada com sucesso!';
+
 END;
 '''
 ]
