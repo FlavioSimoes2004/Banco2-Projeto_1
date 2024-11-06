@@ -348,6 +348,33 @@ BEGIN
 END;
 ''',
 '''
+CREATE TRIGGER IF NOT EXISTS trigger_reduz_ingrediente_apos_venda
+AFTER INSERT ON venda
+FOR EACH ROW
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE ingrediente_id INT;
+    DECLARE cursor_ingredientes CURSOR FOR 
+        SELECT id_ingrediente FROM usos WHERE id_prato = NEW.id_prato;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    OPEN cursor_ingredientes;
+    
+    read_loop: LOOP
+        FETCH cursor_ingredientes INTO ingrediente_id;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        
+        UPDATE ingredientes
+        SET quantidade = quantidade - 1
+        WHERE id = ingrediente_id;
+    END LOOP;
+    
+    CLOSE cursor_ingredientes;
+END;
+''',
+'''
 CREATE TRIGGER verificar_disponibilidade
 BEFORE INSERT ON venda
 FOR EACH ROW
