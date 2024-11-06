@@ -51,7 +51,28 @@ BEGIN
     SELECT p.nome AS prato, @maior_valor_ganho AS valor_ganho_total
     FROM prato p
     WHERE p.id = produto_mais_vendido;
+        LIMIT 1;
     
+    -- Exibe o nome do produto mais vendido e o valor ganho com ele
+    SELECT p.nome AS prato, @maior_valor_ganho AS valor_ganho_total
+    FROM prato p
+    WHERE p.id = produto_mais_vendido;
+
+    -- Mês de maior venda do produto mais vendido
+    SELECT DATE_FORMAT(v.dia, '%Y-%m') AS mes, SUM(v.valor * v.quantidade) AS ganho_mes
+    FROM venda v
+    WHERE v.id_prato = produto_mais_vendido
+    GROUP BY mes
+    ORDER BY ganho_mes DESC
+    LIMIT 1;
+
+    -- Mês de menor venda do produto mais vendido
+    SELECT DATE_FORMAT(v.dia, '%Y-%m') AS mes, SUM(v.valor * v.quantidade) AS ganho_mes
+    FROM venda v
+    WHERE v.id_prato = produto_mais_vendido
+    GROUP BY mes
+    ORDER BY ganho_mes ASC
+    LIMIT 1;
 END//
 DELIMITER ;
 call Estatisticas();
